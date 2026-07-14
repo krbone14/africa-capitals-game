@@ -831,9 +831,13 @@ class Component extends DCLogic {
     // Mouse/pen: drag & drop. Touch: tap a chip to select it, then tap the map
     // to place it — this keeps the tray scrollable and works well on phones.
     this._docDown = (e) => {
-      if (this.state.screen !== 'play' || this.dragId || this._panning) return;
+      if (this.state.screen !== 'play' || this.dragId) return;
       const t = e.target;
       if (!t || !t.closest) return;
+      const onMap = t.closest('[data-map-pan]') && !t.closest('[data-zoom-ctrl]');
+      // While a map gesture is in progress, additional touch pointers feed the
+      // pinch — they must NOT be swallowed, or two-finger zoom never starts.
+      if (this._panning) { if (onMap && e.pointerType === 'touch') this.startMapGesture(e); return; }
       const chip = t.closest('[data-cap-id]');
       if (chip) {
         const id = chip.getAttribute('data-cap-id');
@@ -842,9 +846,19 @@ class Component extends DCLogic {
         else this.startDrag(id, e);
         return;
       }
-      if (t.closest('[data-map-pan]') && !t.closest('[data-zoom-ctrl]')) {
-        // With a chip selected, a tap on the map is a placement attempt.
-        if (this.state.selectedId) { e.preventDefault(); this.tryPlace(this.state.selectedId, e.clientX, e.clientY); return; }
+      if (onMap) {
+        if (this.state.selectedId) {
+          e.preventDefault();
+          if (e.pointerType === 'touch') {
+            // Defer placement to a clean tap (decided on pointerup) so a
+            // two-finger pinch or a pan still works with a chip selected.
+            this._placeCand = { id:this.state.selectedId, x:e.clientX, y:e.clientY, moved:false };
+            this.startMapGesture(e);
+          } else {
+            this.tryPlace(this.state.selectedId, e.clientX, e.clientY);
+          }
+          return;
+        }
         this.startMapGesture(e);
       }
     };
@@ -905,6 +919,7 @@ class Component extends DCLogic {
     if (isTouch && this._mapPts.size >= 2) {
       const [a,b] = [...this._mapPts.values()];
       this._pinch = { d0: Math.max(20, Math.hypot(a.x-b.x, a.y-b.y)), z0: this._gest.zoom };
+      this._hadPinch = true;
       this._panStart = null;
     } else {
       this._panStart = { x:e.clientX, y:e.clientY, px:this._gest.panX, py:this._gest.panY };
@@ -915,6 +930,7 @@ class Component extends DCLogic {
     this._mapBound = true;
     this._mapMove = (ev) => {
       if (this._mapPts.has(ev.pointerId)) this._mapPts.set(ev.pointerId, { x:ev.clientX, y:ev.clientY });
+      if (this._placeCand && Math.hypot(ev.clientX-this._placeCand.x, ev.clientY-this._placeCand.y) > 10) this._placeCand.moved = true;
       if (this._pinch && this._mapPts.size >= 2) {
         const [a,b] = [...this._mapPts.values()];
         const z = Math.max(1, Math.min(5, this._pinch.z0 * Math.hypot(a.x-b.x, a.y-b.y) / this._pinch.d0));
@@ -942,6 +958,11 @@ class Component extends DCLogic {
         if (this.vpRef.current) this.vpRef.current.style.cursor = this._gest.zoom>1?'grab':'default';
         this.setState({ zoom:this._gest.zoom, panX:this._gest.panX, panY:this._gest.panY });
         this._gest = null;
+        // A clean tap (no movement, no pinch) with a selected chip places it
+        // at the lift point.
+        const cand = this._placeCand; this._placeCand = null;
+        const pinched = this._hadPinch; this._hadPinch = false;
+        if (cand && !cand.moved && !pinched) this.tryPlace(cand.id, ev.clientX, ev.clientY);
       }
     };
     window.addEventListener('pointermove', this._mapMove);
@@ -1150,6 +1171,7 @@ class Component extends DCLogic {
     // Pick a random anecdote for this country (index is language-independent,
     // so switching language inside the popup keeps the same fact).
     const nFacts = this.factsOf(id, this.state.lang).length;
+    this._factAt = Date.now();
     this.setState({ placed, score, dragId:null, selectedId:null, factOpen:true, factId:id, factIdx: Math.floor(Math.random()*nFacts) });
   }
   resolveWrong(id){
@@ -1161,6 +1183,9 @@ class Component extends DCLogic {
     clearTimeout(this._shTo); this._shTo=setTimeout(()=>this.setState({shake:false}),500);
   }
   closeFact(){
+    // Mobile browsers fire a ghost "click" right after the placement tap; it
+    // lands on the freshly opened popup overlay and would close it instantly.
+    if (this._factAt && Date.now() - this._factAt < 400) return;
     const done = this.taskIds().every(id=>this.state.placed[id]);
     if(done){ this.finishLevel(); }
     else { this.setState({ factOpen:false, factId:null }); }
