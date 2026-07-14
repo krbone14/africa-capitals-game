@@ -6,11 +6,12 @@ An educational geography game: drag (or tap) each of the 54 African capitals —
 
 ## Features
 
-- **Two game modes** — place the capitals, or place the countries
+- **Three game modes** — place the capitals, the countries, or the flags
 - **5 regions + whole-continent challenge** (all 54 countries)
 - **Bilingual** — French / English, switchable at any time
 - **Fun facts & flags** — every correct answer shows the country's flag and one of several rotating anecdotes
 - **Mobile friendly** — tap a label then tap the map, pinch to zoom, responsive layout
+- **Installable PWA** — add it to your home screen and play fully offline (flags included)
 - **Score, stars & best-score tracking** (saved locally in the browser)
 - **Sound effects** and confetti 🎉
 
@@ -30,13 +31,16 @@ then open `http://localhost:8000`. Opening `index.html` directly from disk also 
 
 ```
 index.html            # the whole game: UI template + game logic
+manifest.json         # PWA manifest (install to home screen)
+sw.js                 # service worker: offline cache (app shell + all 54 flags)
+icons/                # PWA / home-screen icons
 assets/
   africa-geo.js       # window.AFRICA_GEO — SVG paths of the 54 countries + capital coordinates
   dc-runtime.js       # declarative-component runtime (generated, do not edit)
   asset_*.woff2       # Fredoka & Nunito fonts (self-hosted)
 ```
 
-Country flags are loaded at runtime from [flagcdn.com](https://flagcdn.com).
+Country flags come from [flagcdn.com](https://flagcdn.com) and are pre-cached by the service worker for offline play.
 
 ## Contributing
 
