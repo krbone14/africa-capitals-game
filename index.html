@@ -1137,14 +1137,12 @@ class Component extends DCLogic {
     const svg=this.svgRef.current;
     let correct=false, sx=0, sy=0;
     if(svg && id){
-      // Map pointer -> SVG user coords via the SVG's own matrix (robust to
-      // letterboxing, container size, and the zoom/pan CSS transform).
-      let mapped=false;
-      try{
-        const ctm=svg.getScreenCTM();
-        if(ctm){ const pt=svg.createSVGPoint(); pt.x=cx; pt.y=cy; const u=pt.matrixTransform(ctm.inverse()); sx=u.x; sy=u.y; mapped=true; }
-      }catch(err){}
-      if(!mapped){ const rect=svg.getBoundingClientRect(); sx=(cx-rect.left)/rect.width*1000; sy=(cy-rect.top)/rect.height*957; }
+      // Client point -> SVG user coords via the map box rect. Unlike
+      // getScreenCTM(), getBoundingClientRect() reflects the zoom/pan CSS
+      // transform in every browser — Safari (iPad) ignores ancestor CSS
+      // transforms in the CTM, which broke placement after zooming.
+      const rect=(this.mapBoxRef.current||svg).getBoundingClientRect();
+      sx=(cx-rect.left)/rect.width*1000; sy=(cy-rect.top)/rect.height*957;
       const cap=window.AFRICA_GEO.caps[id];
       if(this.state.mode==='country'){
         // Place-the-country: drop anywhere inside the country shape; islands fall back to a point hit.
