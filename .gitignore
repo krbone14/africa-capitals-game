@@ -1,0 +1,9 @@
+# OS files
+Thumbs.db
+.DS_Store
+
+# Local tooling settings
+.claude/
+
+# Original bundled export kept as a local backup only
+Capitales et pays d'Afrique - hors-ligne.html
