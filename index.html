@@ -432,6 +432,9 @@
         <button onclick="{{ onModeCountry }}" style="cursor:pointer;border:none;border-radius:11px;padding:10px 20px;font-family:'Nunito';font-weight:800;font-size:15px;background:{{ modeCountryBg }};color:{{ modeCountryColor }};display:flex;align-items:center;gap:8px;">
           <span style="width:13px;height:13px;border-radius:3px;background:{{ modeCountryDot }};display:inline-block;"></span>{{ t.modeCountry }}
         </button>
+        <button onclick="{{ onModeFlag }}" style="cursor:pointer;border:none;border-radius:11px;padding:10px 20px;font-family:'Nunito';font-weight:800;font-size:15px;background:{{ modeFlagBg }};color:{{ modeFlagColor }};display:flex;align-items:center;gap:8px;">
+          <span style="width:17px;height:12px;border-radius:2px;background:{{ modeFlagDot }};display:inline-block;"></span>{{ t.modeFlag }}
+        </button>
       </div>
     </div>
 
@@ -531,7 +534,7 @@
             </sc-for>
             <sc-for list="{{ pins }}" as="p" hint-placeholder-count="0">
               <div style="position:absolute;left:{{ p.leftPct }}%;top:{{ p.labelTopPct }}%;transform:translate(-50%,-50%) scale({{ invZoom }});">
-                <div style="font-family:'Fredoka';font-weight:600;font-size:13.5px;color:{{ p.color }};background:#fff;padding:1px 7px;border-radius:8px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.16);animation:pinPop .45s cubic-bezier(.2,1.3,.5,1) both;">{{ p.label }}</div>
+                <div style="display:flex;align-items:center;gap:5px;font-family:'Fredoka';font-weight:600;font-size:13.5px;color:{{ p.color }};background:#fff;padding:1px 7px;border-radius:8px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.16);animation:pinPop .45s cubic-bezier(.2,1.3,.5,1) both;"><span style="display:{{ p.flagDisplay }};width:19px;height:13px;border-radius:2px;background-image:url('{{ p.flag }}');background-size:cover;background-position:center;box-shadow:0 0 0 1px #EFE0C1;"></span>{{ p.label }}</div>
               </div>
             </sc-for>
           </div>
@@ -561,7 +564,8 @@
         <div class="g-chips" style="flex:1;overflow-y:auto;padding:6px 16px 18px;display:flex;flex-direction:column;gap:10px;">
           <sc-for list="{{ chips }}" as="c" hint-placeholder-count="6">
             <div class="g-chip" data-cap-id="{{ c.id }}" draggable="false" style="cursor:grab;user-select:none;touch-action:pan-y;background:{{ c.bg }};border:2px solid {{ c.border }};border-left:7px solid {{ c.color }};border-radius:14px;padding:11px 14px;opacity:{{ c.opacity }};box-shadow:0 3px 0 {{ c.shadow }};transition:transform .08s;">
-              <div class="g-chip-cap" style="font-family:'Fredoka';font-weight:600;font-size:17px;line-height:1.15;color:#3B2F27;">{{ c.cap }}</div>
+              <div style="display:{{ c.flagDisplay }};width:66px;height:44px;border-radius:6px;border:2px solid #EFE0C1;background-color:#F6ECD6;background-image:url('{{ c.flag }}');background-size:cover;background-position:center;pointer-events:none;"></div>
+              <div class="g-chip-cap" style="display:{{ c.capDisplay }};font-family:'Fredoka';font-weight:600;font-size:17px;line-height:1.15;color:#3B2F27;">{{ c.cap }}</div>
             </div>
           </sc-for>
           <sc-if value="{{ trayEmpty }}" hint-placeholder-val="{{ false }}">
@@ -574,7 +578,8 @@
 
   <!-- drag ghost -->
   <div ref="{{ ghostRefObj }}" style="position:fixed;left:0;top:0;z-index:90;pointer-events:none;display:{{ ghostDisplay }};background:#fff;border:2px solid {{ playColor }};border-left:7px solid {{ playColor }};border-radius:14px;padding:11px 14px;box-shadow:0 12px 26px rgba(0,0,0,.22);transform:translate(-9999px,-9999px);">
-    <div style="font-family:'Fredoka';font-weight:600;font-size:17px;line-height:1.15;color:#3B2F27;">{{ ghostCap }}</div>
+    <div style="display:{{ ghostFlagDisplay }};width:66px;height:44px;border-radius:6px;border:2px solid #EFE0C1;background-color:#F6ECD6;background-image:url('{{ ghostFlag }}');background-size:cover;background-position:center;"></div>
+    <div style="display:{{ ghostCapDisplay }};font-family:'Fredoka';font-weight:600;font-size:17px;line-height:1.15;color:#3B2F27;">{{ ghostCap }}</div>
   </div>
 
   <!-- fact modal -->
@@ -813,8 +818,8 @@ class Component extends DCLogic {
   flagUrl(id){ return this.A2[id] ? 'https://flagcdn.com/w160/'+this.A2[id]+'.png' : ''; }
 
   T = {
-    fr:{ badge:'GÉOGRAPHIE', title:"Les Capitales d'Afrique", titleCap:"Les Capitales d'Afrique", titleCountry:"Les Pays d'Afrique", allCountCap:'Les 54 capitales · défi ultime', allCountCountry:'Les 54 pays · défi ultime', subtitle:"Glisse chaque capitale au bon endroit sur la carte. Choisis une région pour commencer !", subtitleCap:"Glisse chaque capitale au bon endroit sur la carte. Choisis une région pour commencer !", subtitleCountry:"Glisse chaque pays à sa place sur la carte. Choisis une région pour commencer !", modeQ:"Que veux-tu apprendre ?", modeCap:'Capitales', modeCountry:'Pays', trayTitleCap:'Capitales à placer', trayHintCap:'Glisse ou touche une étiquette, puis la carte', trayTitleCountry:'Pays à placer', trayHintCountry:'Glisse ou touche un pays, puis la carte', tapPlace:'Maintenant, touche le bon endroit sur la carte !', play:'Jouer', allTitle:'Tout le continent', allCount:'Les 54 capitales · défi ultime', challenge:'Défi', placed:'Placées', showNames:'Afficher les noms des pays', namesShort:'Pays', trayTitle:'Capitales à placer', trayHint:'Fais glisser une étiquette sur la carte', allDone:'Toutes placées ! 🎉', points:'points', firstTry:'du 1er coup', replay:'Rejouer', home:'Accueil', factBtn:'Continuer', reset:'Réinitialiser le zoom', good:['Bravo !','Super !','Excellent !','Parfait !','Génial !'], bad:['Presque !','Réessaie !','Pas tout à fait…','Encore un essai !'], resPerfect:'Sans-faute !', resGreat:'Très bien joué !', resGood:'Bien joué !' },
-    en:{ badge:'GEOGRAPHY', title:'Capitals of Africa', titleCap:'Capitals of Africa', titleCountry:'Countries of Africa', allCountCap:'All 54 capitals · ultimate challenge', allCountCountry:'All 54 countries · ultimate challenge', subtitle:'Drag each capital to the right spot on the map. Pick a region to start!', subtitleCap:'Drag each capital to the right spot on the map. Pick a region to start!', subtitleCountry:'Drag each country to its place on the map. Pick a region to start!', modeQ:'What do you want to learn?', modeCap:'Capitals', modeCountry:'Countries', trayTitleCap:'Capitals to place', trayHintCap:'Drag a label, or tap it then tap the map', trayTitleCountry:'Countries to place', trayHintCountry:'Drag a country, or tap it then tap the map', tapPlace:'Now tap the right spot on the map!', play:'Play', allTitle:'The whole continent', allCount:'All 54 capitals · ultimate challenge', challenge:'Challenge', placed:'Placed', showNames:'Show country names', namesShort:'Names', trayTitle:'Capitals to place', trayHint:'Drag a label onto the map', allDone:'All placed! 🎉', points:'points', firstTry:'first try', replay:'Play again', home:'Home', factBtn:'Continue', reset:'Reset zoom', good:['Nice!','Great!','Excellent!','Perfect!','Awesome!'], bad:['Almost!','Try again!','Not quite…','One more try!'], resPerfect:'Flawless!', resGreat:'Really well played!', resGood:'Well done!' },
+    fr:{ badge:'GÉOGRAPHIE', title:"Les Capitales d'Afrique", titleCap:"Les Capitales d'Afrique", titleCountry:"Les Pays d'Afrique", titleFlag:"Les Drapeaux d'Afrique", allCountCap:'Les 54 capitales · défi ultime', allCountCountry:'Les 54 pays · défi ultime', allCountFlag:'Les 54 drapeaux · défi ultime', subtitle:"Glisse chaque capitale au bon endroit sur la carte. Choisis une région pour commencer !", subtitleCap:"Glisse chaque capitale au bon endroit sur la carte. Choisis une région pour commencer !", subtitleCountry:"Glisse chaque pays à sa place sur la carte. Choisis une région pour commencer !", subtitleFlag:"Glisse chaque drapeau sur son pays. Choisis une région pour commencer !", modeQ:"Que veux-tu apprendre ?", modeCap:'Capitales', modeCountry:'Pays', modeFlag:'Drapeaux', trayTitleCap:'Capitales à placer', trayHintCap:'Glisse ou touche une étiquette, puis la carte', trayTitleCountry:'Pays à placer', trayHintCountry:'Glisse ou touche un pays, puis la carte', trayTitleFlag:'Drapeaux à placer', trayHintFlag:'Glisse ou touche un drapeau, puis la carte', tapPlace:'Maintenant, touche le bon endroit sur la carte !', play:'Jouer', allTitle:'Tout le continent', allCount:'Les 54 capitales · défi ultime', challenge:'Défi', placed:'Placées', showNames:'Afficher les noms des pays', namesShort:'Pays', trayTitle:'Capitales à placer', trayHint:'Fais glisser une étiquette sur la carte', allDone:'Toutes placées ! 🎉', points:'points', firstTry:'du 1er coup', replay:'Rejouer', home:'Accueil', factBtn:'Continuer', reset:'Réinitialiser le zoom', good:['Bravo !','Super !','Excellent !','Parfait !','Génial !'], bad:['Presque !','Réessaie !','Pas tout à fait…','Encore un essai !'], resPerfect:'Sans-faute !', resGreat:'Très bien joué !', resGood:'Bien joué !' },
+    en:{ badge:'GEOGRAPHY', title:'Capitals of Africa', titleCap:'Capitals of Africa', titleCountry:'Countries of Africa', titleFlag:'Flags of Africa', allCountCap:'All 54 capitals · ultimate challenge', allCountCountry:'All 54 countries · ultimate challenge', allCountFlag:'All 54 flags · ultimate challenge', subtitle:'Drag each capital to the right spot on the map. Pick a region to start!', subtitleCap:'Drag each capital to the right spot on the map. Pick a region to start!', subtitleCountry:'Drag each country to its place on the map. Pick a region to start!', subtitleFlag:'Drag each flag onto its country. Pick a region to start!', modeQ:'What do you want to learn?', modeCap:'Capitals', modeCountry:'Countries', modeFlag:'Flags', trayTitleCap:'Capitals to place', trayHintCap:'Drag a label, or tap it then tap the map', trayTitleCountry:'Countries to place', trayHintCountry:'Drag a country, or tap it then tap the map', trayTitleFlag:'Flags to place', trayHintFlag:'Drag a flag, or tap it then tap the map', tapPlace:'Now tap the right spot on the map!', play:'Play', allTitle:'The whole continent', allCount:'All 54 capitals · ultimate challenge', challenge:'Challenge', placed:'Placed', showNames:'Show country names', namesShort:'Names', trayTitle:'Capitals to place', trayHint:'Drag a label onto the map', allDone:'All placed! 🎉', points:'points', firstTry:'first try', replay:'Play again', home:'Home', factBtn:'Continue', reset:'Reset zoom', good:['Nice!','Great!','Excellent!','Perfect!','Awesome!'], bad:['Almost!','Try again!','Not quite…','One more try!'], resPerfect:'Flawless!', resGreat:'Really well played!', resGood:'Well done!' },
   };
 
   componentDidMount(){
@@ -1171,8 +1176,8 @@ class Component extends DCLogic {
       const rect=(this.mapBoxRef.current||svg).getBoundingClientRect();
       sx=(cx-rect.left)/rect.width*1000; sy=(cy-rect.top)/rect.height*957;
       const cap=window.AFRICA_GEO.caps[id];
-      if(this.state.mode==='country'){
-        // Place-the-country: drop anywhere inside the country shape; islands fall back to a point hit.
+      if(this.state.mode==='country' || this.state.mode==='flag'){
+        // Country & flag modes: drop anywhere inside the country shape; islands fall back to a point hit.
         const path=svg.querySelector('path[data-id="'+id+'"]');
         if(path && path.isPointInFill){ try{ if(path.isPointInFill(new DOMPoint(sx,sy))) correct=true; }catch(err){} }
         if(!correct && cap){ const d=Math.hypot(sx-cap.x, sy-cap.y); if(d<this.TOL+6) correct=true; }
@@ -1253,23 +1258,28 @@ class Component extends DCLogic {
 
     // ---- HOME ----
     if(S.screen==='home'){
-      const isCountryHome = S.mode==='country';
-      base.homeTitle = isCountryHome ? t.titleCountry : t.titleCap;
-      base.allCountText = isCountryHome ? t.allCountCountry : t.allCountCap;
-      base.homeSubtitle = isCountryHome ? t.subtitleCountry : t.subtitleCap;
-      base.modeCapBg = S.mode==='cap'?'#E2A24B':'transparent';
-      base.modeCapColor = S.mode==='cap'?'#fff':'#9A7E5C';
-      base.modeCapDot = S.mode==='cap'?'#fff':'#E2A24B';
-      base.modeCountryBg = S.mode==='country'?'#3F9E78':'transparent';
-      base.modeCountryColor = S.mode==='country'?'#fff':'#9A7E5C';
-      base.modeCountryDot = S.mode==='country'?'#fff':'#3F9E78';
+      const m = S.mode;
+      base.homeTitle = m==='country' ? t.titleCountry : m==='flag' ? t.titleFlag : t.titleCap;
+      base.allCountText = m==='country' ? t.allCountCountry : m==='flag' ? t.allCountFlag : t.allCountCap;
+      base.homeSubtitle = m==='country' ? t.subtitleCountry : m==='flag' ? t.subtitleFlag : t.subtitleCap;
+      base.modeCapBg = m==='cap'?'#E2A24B':'transparent';
+      base.modeCapColor = m==='cap'?'#fff':'#9A7E5C';
+      base.modeCapDot = m==='cap'?'#fff':'#E2A24B';
+      base.modeCountryBg = m==='country'?'#3F9E78':'transparent';
+      base.modeCountryColor = m==='country'?'#fff':'#9A7E5C';
+      base.modeCountryDot = m==='country'?'#fff':'#3F9E78';
+      base.modeFlagBg = m==='flag'?'#B06A9A':'transparent';
+      base.modeFlagColor = m==='flag'?'#fff':'#9A7E5C';
+      base.modeFlagDot = m==='flag'?'#fff':'#B06A9A';
       base.onModeCap = ()=>this.setState({mode:'cap'});
       base.onModeCountry = ()=>this.setState({mode:'country'});
+      base.onModeFlag = ()=>this.setState({mode:'flag'});
+      const unit = m==='country' ? (lang==='fr'?'pays':'countries') : m==='flag' ? (lang==='fr'?'drapeaux':'flags') : (lang==='fr'?'capitales':'capitals');
       base.regionCards = this.REGIONS.map(r=>{
         const pr=S.progress[S.mode+':'+r.id]||{stars:0,best:0};
         return {
           name: lang==='fr'?r.fr:r.en,
-          countText: r.ids.length+' '+(isCountryHome ? (lang==='fr'?'pays':'countries') : (lang==='fr'?'capitales':'capitals')),
+          countText: r.ids.length+' '+unit,
           bg:r.bg, shadow:r.shadow,
           starArr:[0,1,2].map(i=>({color: i<pr.stars?'#FFE08A':'rgba(255,255,255,.35)'})),
           bestText: pr.best? (pr.best+' '+t.points) : '',
@@ -1293,9 +1303,10 @@ class Component extends DCLogic {
       base.scoreText = String(S.score);
       base.onBack = ()=>this.setState({screen:'home'});
       const isCountry = S.mode==='country';
-      base.showNamesBtn = !isCountry;   // hiding country names is pointless in capital mode; in country mode it would be the answer
-      base.trayTitle = isCountry ? t.trayTitleCountry : t.trayTitleCap;
-      base.trayHint = S.selectedId ? t.tapPlace : (isCountry ? t.trayHintCountry : t.trayHintCap);
+      const isFlag = S.mode==='flag';
+      base.showNamesBtn = !isCountry;   // country names on the map would be the answer in country mode; in flag mode they are only a partial hint
+      base.trayTitle = isCountry ? t.trayTitleCountry : isFlag ? t.trayTitleFlag : t.trayTitleCap;
+      base.trayHint = S.selectedId ? t.tapPlace : (isCountry ? t.trayHintCountry : isFlag ? t.trayHintFlag : t.trayHintCap);
       base.onToggleNames = ()=>this.setState({showNames:!S.showNames});
       base.showNames=S.showNames;
       base.namesBtnBg = S.showNames? color : '#F6ECD6';
@@ -1336,17 +1347,22 @@ class Component extends DCLogic {
 
       base.pins = taskIds.filter(id=>placed[id]&&GEO.caps[id]).map(id=>{
         const cap=GEO.caps[id];
-        if(isCountry){
+        if(isCountry || isFlag){
           const ctr = ctrOf(id);
-          return { leftPct: ctr.x/1000*100, topPct: ctr.y/957*100, labelTopPct: (ctr.y-15)/957*100, color:this.idColor(id), label: lang==='fr'?this.C[id].cf:this.C[id].ce };
+          return { leftPct: ctr.x/1000*100, topPct: ctr.y/957*100, labelTopPct: (ctr.y-15)/957*100, color:this.idColor(id), label: lang==='fr'?this.C[id].cf:this.C[id].ce,
+                   flag: isFlag ? this.flagUrl(id) : 'data:,', flagDisplay: isFlag ? 'inline-block' : 'none' };
         }
-        return { leftPct: cap.x/1000*100, topPct: cap.y/957*100, labelTopPct: (cap.y-15)/957*100, color:this.idColor(id), label: lang==='fr'?this.C[id].capFr:cap.n };
+        return { leftPct: cap.x/1000*100, topPct: cap.y/957*100, labelTopPct: (cap.y-15)/957*100, color:this.idColor(id), label: lang==='fr'?this.C[id].capFr:cap.n,
+                 flag:'data:,', flagDisplay:'none' };
       });
 
       const neutralChips = S.regionId==='all';
       base.chips = this.shuffleStable(taskIds).filter(id=>!placed[id]).map(id=>({
         id,
-        cap: isCountry ? (lang==='fr'?this.C[id].cf:this.C[id].ce) : (lang==='fr'?this.C[id].capFr:GEO.caps[id].n),
+        cap: isCountry ? (lang==='fr'?this.C[id].cf:this.C[id].ce) : isFlag ? '' : (lang==='fr'?this.C[id].capFr:GEO.caps[id].n),
+        capDisplay: isFlag ? 'none' : 'block',
+        flag: isFlag ? this.flagUrl(id) : 'data:,',
+        flagDisplay: isFlag ? 'block' : 'none',
         country: lang==='fr'?this.C[id].cf:this.C[id].ce,
         color: neutralChips ? '#BBA37E' : this.idColor(id),
         shadow: neutralChips ? '#A98A5B' : this.idShadow(id),
@@ -1359,7 +1375,10 @@ class Component extends DCLogic {
 
       // ghost
       base.ghostDisplay = S.dragId ? 'block' : 'none';
-      base.ghostCap = S.dragId? (isCountry ? (lang==='fr'?this.C[S.dragId].cf:this.C[S.dragId].ce) : (lang==='fr'?this.C[S.dragId].capFr:GEO.caps[S.dragId].n)) : '';
+      base.ghostCap = S.dragId? (isCountry ? (lang==='fr'?this.C[S.dragId].cf:this.C[S.dragId].ce) : isFlag ? '' : (lang==='fr'?this.C[S.dragId].capFr:GEO.caps[S.dragId].n)) : '';
+      base.ghostCapDisplay = isFlag ? 'none' : 'block';
+      base.ghostFlag = (S.dragId && isFlag) ? this.flagUrl(S.dragId) : 'data:,';
+      base.ghostFlagDisplay = isFlag ? 'block' : 'none';
       base.ghostCountry = S.dragId? (lang==='fr'?this.C[S.dragId].cf:this.C[S.dragId].ce) : '';
 
       // fact
@@ -1391,6 +1410,8 @@ class Component extends DCLogic {
       base.resTitle = S.resStars>=3? t.resPerfect : S.resStars>=2? t.resGreat : t.resGood;
       base.resMsg = S.mode==='country'
         ? (lang==='fr'?'Tu as placé tous les pays.':'You placed every country.')
+        : S.mode==='flag'
+        ? (lang==='fr'?'Tu as placé tous les drapeaux.':'You placed every flag.')
         : (lang==='fr'?'Tu as placé toutes les capitales.':'You placed every capital.');
       base.confetti=S.confetti;
       base.onReplay=()=>this.startLevel(S.regionId);
