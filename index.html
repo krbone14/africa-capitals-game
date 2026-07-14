@@ -874,6 +874,10 @@ class Component extends DCLogic {
     document.addEventListener('wheel', this._wheel, { passive:false });
     this._resize = () => this.fitMap();
     window.addEventListener('resize', this._resize);
+    // Unlock/resume audio on every user gesture (iOS suspends the context
+    // until a gesture, and may re-suspend it when the tab is backgrounded).
+    this._unlock = () => this.unlockAudio();
+    document.addEventListener('pointerdown', this._unlock, { passive:true });
   }
   componentWillUnmount(){
     if (this._docDown) document.removeEventListener('pointerdown', this._docDown);
@@ -884,6 +888,7 @@ class Component extends DCLogic {
     window.removeEventListener('pointerup', this._up);
     if (this._mapMove) window.removeEventListener('pointermove', this._mapMove);
     if (this._mapUp) { window.removeEventListener('pointerup', this._mapUp); window.removeEventListener('pointercancel', this._mapUp); }
+    if (this._unlock) document.removeEventListener('pointerdown', this._unlock);
   }
 
   // ---- zoom & pan ----
@@ -1006,9 +1011,31 @@ class Component extends DCLogic {
     g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
     o.start(t); o.stop(t+dur+0.02);
   }
-  playGood(){ if(!this.state.soundOn)return; this.ac()&&this.ac().resume&&this.ac().resume(); this.beep(660,0,0.13,'triangle',0.2); this.beep(990,0.1,0.18,'triangle',0.2); }
-  playBad(){ if(!this.state.soundOn)return; this.ac()&&this.ac().resume&&this.ac().resume(); this.beep(220,0,0.16,'sawtooth',0.12); this.beep(170,0.08,0.18,'sawtooth',0.1); }
-  playWin(){ if(!this.state.soundOn)return; this.ac()&&this.ac().resume&&this.ac().resume(); [523,659,784,1047].forEach((f,i)=>this.beep(f,i*0.12,0.22,'triangle',0.2)); }
+  // iOS/Safari keeps the AudioContext suspended until it is resumed during a
+  // real user gesture; a silent buffer play completes the unlock on older iOS.
+  // Called from a document-level pointerdown listener.
+  unlockAudio(){
+    const ac=this.ac(); if(!ac) return;
+    if(ac.state==='suspended' && ac.resume){ try{ ac.resume(); }catch(e){} }
+    if(!this._audioUnlocked){
+      try{
+        const b=ac.createBuffer(1,1,22050);
+        const s=ac.createBufferSource();
+        s.buffer=b; s.connect(ac.destination); s.start(0);
+        this._audioUnlocked=true;
+      }catch(e){}
+    }
+  }
+  // resume() is async: scheduling beeps while still suspended computes times
+  // from a frozen currentTime and nothing is heard. Run fn once audio is live.
+  withAudio(fn){
+    const ac=this.ac(); if(!ac) return;
+    if(ac.state==='suspended' && ac.resume){ ac.resume().then(fn).catch(()=>{}); }
+    else fn();
+  }
+  playGood(){ if(!this.state.soundOn)return; this.withAudio(()=>{ this.beep(660,0,0.13,'triangle',0.2); this.beep(990,0.1,0.18,'triangle',0.2); }); }
+  playBad(){ if(!this.state.soundOn)return; this.withAudio(()=>{ this.beep(220,0,0.16,'sawtooth',0.12); this.beep(170,0.08,0.18,'sawtooth',0.1); }); }
+  playWin(){ if(!this.state.soundOn)return; this.withAudio(()=>{ [523,659,784,1047].forEach((f,i)=>this.beep(f,i*0.12,0.22,'triangle',0.2)); }); }
 
   // ---- helpers ----
   centers(){
