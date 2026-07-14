@@ -2,7 +2,7 @@
 
 An educational geography game: drag (or tap) each of the 54 African capitals — or countries — onto the right spot of the map. Built as a single self-contained web page, playable on desktop and mobile.
 
-**🎮 Play online:** https://YOUR-USERNAME.github.io/africa-capitals-game/
+**🎮 Play online:** https://krbone14.github.io/africa-capitals-game/
 
 ## Features
 
